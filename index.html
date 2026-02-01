@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Leaderboard</title>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:wght@600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===== PAGE ===== */
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:url('https://pbs.twimg.com/media/GnxNlPpW8AA8_Z5.jpg') no-repeat center center fixed;
+  background-size:cover;
+  font-family:Inter, sans-serif;
+}
+
+/* ===== BOARD ===== */
+.board{
+  width:78vw;
+  max-width:1400px;
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(10px);
+  border-radius:0;
+  padding:28px 32px 32px;
+  box-shadow:0 40px 80px rgba(0,0,0,.35);
+  overflow:hidden;
+  position:relative;
+  
+}
+
+.board > *{
+  position:relative;
+  z-index:1;
+}
+
+
+/* ===== FULL-WIDTH TOP TITLE BAND ===== */
+.title-band{
+  background:#ffffff;                 /* white band */
+  margin:-28px -32px 14px -32px;       /* cancel board padding */
+  padding:22px 32px 18px;
+  border-radius:18px 18px 0 0;         /* curved TOP only */
+}
+
+/* ===== CBS CURVED TOP CAP ===== */
+/* ===== CBS CURVED TOP CAP (CORRECT ORIENTATION) ===== */
+/* ===== CBS CURVED TOP CAP (FLUSH WIDTH) ===== */
+/* ===== CBS INWARD CURVED TOP ===== */
+.board::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:80px;
+  background:radial-gradient(
+    ellipse at top center,
+    transparent 60%,
+    #ffffff 61%
+  );
+  z-index:0;
+}
+
+
+
+
+
+/* ===== TITLE (CBS BAR) ===== */
+.title{
+  background:none;            /* IMPORTANT: no box */
+  color:#247146;
+  padding:0;
+  margin:0;
+  font-size:80px;
+  text-align:center;
+  font-family:'EB Garamond', serif;
+  font-style:italic;
+  font-weight:700;
+}
+
+/* Title row layout */
+.title-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+/* Logos on both sides */
+.title-logo{
+  height:140px;       /* adjust if needed */
+  width:auto;
+  opacity:0.95;
+}
+
+/* Center title stays centered */
+.title{
+  flex:1;
+  text-align:center;
+}
+
+
+/* ===== TABLE ===== */
+.leaderboard-table{
+  width:100%;
+  table-layout:fixed;
+  border-collapse:collapse;
+}
+
+col:nth-child(1){ width:9%; }
+col:nth-child(2){ width:46%; }
+col:nth-child(3){ width:20%; }
+col:nth-child(4){ width:25%; }
+
+/* ===== HEADER ===== */
+thead th{
+  background:#247146;
+  color:white;
+  padding:14px 12px;
+  font-size:15px;
+  letter-spacing:1.2px;
+  text-transform:uppercase;
+  font-weight:700;
+  text-align:center;
+  border-bottom:2px solid rgba(255,255,255,.35);
+}
+
+thead th:nth-child(2){
+  text-align:left;
+  padding-left:22px;
+}
+
+/* ===== BODY ===== */
+tbody td{
+  padding:16px 12px;
+  font-size:20px;
+  font-weight:600;
+  text-align:center;
+  border-bottom:1px solid rgba(0,0,0,.08);
+}
+
+tbody td:nth-child(2){
+  text-align:left;
+  padding-left:22px;
+  font-size:21px;
+  text-transform:uppercase;
+  letter-spacing:.4px;
+}
+
+/* Position */
+tbody td:nth-child(1){
+  font-weight:800;
+  font-size:22px;
+  color:#0f3d31;
+}
+
+/* TO PAR CBS STYLE */
+tbody td:nth-child(3){
+  color:#FFDEEF;
+  font-weight:900;
+  border-radius:4px;
+}
+
+tbody td:nth-child(3).under{
+  background:#AA002F;
+}
+
+tbody td:nth-child(3).even,
+tbody td:nth-child(3).over{
+  background:#097347;
+}
+
+/* Strokes back */
+tbody td:nth-child(4){
+  font-size:22px;
+  font-weight:700;
+}
+
+/* Alternating rows */
+tbody tr:nth-child(even){
+  background:rgba(255,255,255,.55);
+}
+
+/* Leader highlight */
+tbody tr:nth-child(1){
+  background:rgba(36,113,70,.14);
+}
+
+/* ===== SCROLL WINDOW ===== */
+.scroll-window{
+  height:700px;
+  overflow:hidden;
+}
+
+.scroll-inner{
+  transition:transform 0.6s ease-in-out;
+}
+
+/* ===== FOOTER ===== */
+.updated{
+  margin-top:12px;
+  font-size:13px;
+  font-weight:600;
+  opacity:.7;
+  text-align:right;
+}
+
+/* ===== CBS FOOTER BAR ===== */
+.footer-bar{
+  background:#247146;              /* same green as headers */
+  margin:18px -32px -32px -32px;   /* cancel board padding */
+  padding:10px 32px 12px;
+  position:relative;
+}
+
+/* Footer layout */
+.footer-bar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+
+
+/* Thin yellow strip at very bottom */
+.footer-bar::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:4px;
+  background:#f6c343;              /* CBS yellow accent */
+}
+
+/* Updated timestamp inside footer */
+.updated{
+  color:white;
+  font-size:12px;
+  font-weight:600;
+  text-align:right;
+  opacity:0.9;
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="board">
+
+<div class="title-band">
+  <div class="title-row">
+    <img src="images/bastards-footer.png" alt="Logo" class="title-logo">
+
+    <div class="title">BASTARDS</div>
+
+    <img src="images/bastards-footer.png" alt="Logo" class="title-logo">
+  </div>
+</div>
+
+
+
+  <!-- HEADER -->
+  <table class="leaderboard-table">
+    <colgroup><col><col><col><col></colgroup>
+    <thead id="leaderboard-header"></thead>
+  </table>
+
+  <!-- BODY -->
+  <div class="scroll-window">
+    <div class="scroll-inner" id="scroll-inner">
+      <table class="leaderboard-table">
+        <colgroup><col><col><col><col></colgroup>
+        <tbody id="leaderboard-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+<div class="footer-bar">
+  <div class="footer-left">
+    
+  </div>
+
+  <div id="updated" class="updated"></div>
+</div>
+
+
+
+</div>
+
+<script>
+const sheetURL =
+  "https://docs.google.com/spreadsheets/d/e/2PACX-1vRbQNvXh8nFIh41DyGhpk-zamk_tDrcDMvDAV2G4XJubqDs7TS0t91kkOM742_ZvjGPSM9nn6Y2Exf2/pub?gid=662163311&single=true&output=csv";
+
+const ALLOWED_COLUMNS = ["position","players","to par","strokes back"];
+const PAUSE_TOP = 9000;
+const PAUSE_OTHER = 6000;
+const SCROLL_TIME = 600;
+
+let allRows = [];
+
+/* ===== LOAD DATA ===== */
+async function loadLeaderboard(){
+  const res = await fetch(sheetURL + "&t=" + Date.now());
+  const csv = await res.text();
+
+  const rows = csv.split("\n").map(r => r.split(",").map(c => c.trim()));
+  const headerIndex = rows.findIndex(r => r.some(c => c.toLowerCase() === "position"));
+  const headers = rows[headerIndex];
+  const body = rows.slice(headerIndex + 1);
+
+  const colIndexes = headers
+    .map((h,i)=>ALLOWED_COLUMNS.includes(h.toLowerCase())?i:-1)
+    .filter(i=>i!==-1);
+
+  // HEADER
+  document.getElementById("leaderboard-header").innerHTML =
+    "<tr>" + colIndexes.map(i=>`<th>${headers[i]}</th>`).join("") + "</tr>";
+
+  // BODY
+  let lastPosition = null;
+  allRows = body.filter(r => r.some(c => c));
+
+  document.getElementById("leaderboard-body").innerHTML =
+    allRows.map(r=>{
+      return "<tr>" + colIndexes.map(i=>{
+        let cell = r[i] || "";
+        let cls = "";
+
+        if(headers[i].toLowerCase()==="position"){
+          cell = cell.replace(/^T/i,"");
+          if(cell===lastPosition) cell="";
+          else lastPosition=cell;
+        }
+
+        if(/^-\d+/.test(cell)) cls="under";
+        else if(/^\+\d+/.test(cell)) cls="over";
+        else if(cell==="E") cls="even";
+
+        return `<td class="${cls}">${cell}</td>`;
+      }).join("") + "</tr>";
+    }).join("");
+
+  document.getElementById("updated").textContent =
+    "Updated: " + new Date().toLocaleTimeString();
+}
+
+/* ===== SCROLL ===== */
+function startScroll(){
+  const rows = document.querySelectorAll("#leaderboard-body tr");
+  if(!rows.length) return;
+
+  const h = rows[0].offsetHeight;
+  const inner = document.getElementById("scroll-inner");
+
+  inner.style.transform = "translateY(0)";
+
+  setTimeout(()=>{
+    inner.style.transform = `translateY(-${h*10}px)`;
+    setTimeout(()=>{
+      inner.style.transform = `translateY(-${h*20}px)`;
+      setTimeout(()=>{
+        inner.style.transform = "translateY(0)";
+      }, PAUSE_OTHER);
+    }, PAUSE_OTHER);
+  }, PAUSE_TOP);
+}
+
+/* ===== INIT ===== */
+async function init(){
+  await loadLeaderboard();
+  startScroll();
+  setInterval(startScroll, PAUSE_TOP + PAUSE_OTHER*2 + SCROLL_TIME*3);
+  setInterval(loadLeaderboard, 30000);
+}
+
+init();
+</script>
+
+</body>
+</html>
