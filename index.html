@@ -325,7 +325,8 @@ async function loadLeaderboard(){
 
   // BODY
   let lastPosition = null;
-  allRows = body.filter(r => r.some(c => c));
+  const playerIndex = headers.findIndex(h => h.toLowerCase() === "players");
+allRows = body.filter(r => (r[playerIndex] || "").trim() !== "");
 
   document.getElementById("leaderboard-body").innerHTML =
     allRows.map(r=>{
