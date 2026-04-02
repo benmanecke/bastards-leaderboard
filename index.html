@@ -326,16 +326,17 @@ async function loadLeaderboard(){
   // BODY
   let lastPosition = null;
   const playerIndex = headers.findIndex(h => h.toLowerCase() === "players");
-const positionIndex = headers.findIndex(h => h.toLowerCase() === "position");
+  const positionIndex = headers.findIndex(h => h.toLowerCase() === "position");
 
-allRows = body.filter(r => {
-  const playerCell = (r[playerIndex] || "").trim();
-  const position = (r[positionIndex] || "").trim();
+  allRows = body.filter(r => {
+    const playerCell = (r[playerIndex] || "").trim();
+    const position = (r[positionIndex] || "").trim();
 
-  const bastardsName = playerCell.split(/[•·●]/)[0].trim();
+    // remove bullets and spaces completely
+    const cleanedPlayer = playerCell.replace(/[•·●\s]/g, "");
 
-  return bastardsName !== "" && position !== "";
-});
+    return cleanedPlayer.length > 0 && position !== "";
+  });
 
   document.getElementById("leaderboard-body").innerHTML =
     allRows.map(r=>{
