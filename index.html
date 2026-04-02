@@ -378,6 +378,7 @@ function startScroll(){
 
   const rows = document.querySelectorAll("#leaderboard-body tr");
   const inner = document.getElementById("scroll-inner");
+  const scrollWindow = document.querySelector(".scroll-window");
 
   if (!rows.length) {
     inner.style.transform = "translateY(0)";
@@ -391,6 +392,10 @@ function startScroll(){
   }
 
   const rowsPerPage = Math.max(1, Math.floor(SCROLL_WINDOW_HEIGHT / rowHeight));
+
+  // Make the visible window fit an exact whole number of rows
+  scrollWindow.style.height = `${rowsPerPage * rowHeight}px`;
+
   const totalRows = rows.length;
   const totalPages = Math.ceil(totalRows / rowsPerPage);
 
