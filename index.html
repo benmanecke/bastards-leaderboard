@@ -340,23 +340,32 @@ async function loadLeaderboard(){
     return cleanedPlayer.length > 0 && position !== "";
   });
 
-  document.getElementById("leaderboard-body").innerHTML =
-    allRows.map((r, rowIndex) => {
-      return "<tr>" + colIndexes.map(i => {
-        let cell = (r[i] || "").trim();
-        let cls = "";
+let lastPosition = "";
 
-        if (headers[i].toLowerCase().trim() === "position") {
-          cell = String(rowIndex + 1);
+document.getElementById("leaderboard-body").innerHTML =
+  allRows.map((r) => {
+    return "<tr>" + colIndexes.map(i => {
+      let cell = (r[i] || "").trim();
+      let cls = "";
+
+      if (headers[i].toLowerCase().trim() === "position") {
+        const normalizedPosition = cell.replace(/^T/i, "").trim();
+
+        if (normalizedPosition === lastPosition) {
+          cell = "";
+        } else {
+          cell = normalizedPosition;
+          lastPosition = normalizedPosition;
         }
+      }
 
-        if (/^-\d+/.test(cell)) cls = "under";
-        else if (/^\+\d+/.test(cell)) cls = "over";
-        else if (cell === "E") cls = "even";
+      if (/^-\d+/.test(cell)) cls = "under";
+      else if (/^\+\d+/.test(cell)) cls = "over";
+      else if (cell === "E") cls = "even";
 
-        return `<td class="${cls}">${cell}</td>`;
-      }).join("") + "</tr>";
-    }).join("");
+      return `<td class="${cls}">${cell}</td>`;
+    }).join("") + "</tr>";
+  }).join("");
 
   document.getElementById("updated").textContent =
     "Updated: " + new Date().toLocaleTimeString();
