@@ -307,56 +307,36 @@ let allRows = [];
 
 /* ===== LOAD DATA ===== */
 async function loadLeaderboard(){
-  const res = await fetch(sheetURL + "&t=" + Date.now());
-  const csv = await res.text();
+ // BODY
+const playerIndex = headers.findIndex(h => h.toLowerCase() === "players");
+const positionIndex = headers.findIndex(h => h.toLowerCase() === "position");
 
-  const rows = csv.split("\n").map(r => r.split(",").map(c => c.trim()));
-  const headerIndex = rows.findIndex(r => r.some(c => c.toLowerCase() === "position"));
-  const headers = rows[headerIndex];
-  const body = rows.slice(headerIndex + 1);
+allRows = body.filter(r => {
+  const playerCell = (r[playerIndex] || "").trim();
+  const position = (r[positionIndex] || "").trim();
 
-  const colIndexes = headers
-    .map((h,i)=>ALLOWED_COLUMNS.includes(h.toLowerCase())?i:-1)
-    .filter(i=>i!==-1);
+  const cleanedPlayer = playerCell.replace(/[•·●\s]/g, "");
 
-  // HEADER
-  document.getElementById("leaderboard-header").innerHTML =
-    "<tr>" + colIndexes.map(i=>`<th>${headers[i]}</th>`).join("") + "</tr>";
+  return cleanedPlayer.length > 0 && position !== "";
+});
 
-  // BODY
-  let lastPosition = null;
-  const playerIndex = headers.findIndex(h => h.toLowerCase() === "players");
-  const positionIndex = headers.findIndex(h => h.toLowerCase() === "position");
+document.getElementById("leaderboard-body").innerHTML =
+  allRows.map((r, rowIndex) => {
+    return "<tr>" + colIndexes.map(i => {
+      let cell = r[i] || "";
+      let cls = "";
 
-  allRows = body.filter(r => {
-    const playerCell = (r[playerIndex] || "").trim();
-    const position = (r[positionIndex] || "").trim();
+      if (headers[i].toLowerCase() === "position") {
+        cell = rowIndex + 1;
+      }
 
-    // remove bullets and spaces completely
-    const cleanedPlayer = playerCell.replace(/[•·●\s]/g, "");
+      if (/^-\d+/.test(cell)) cls = "under";
+      else if (/^\+\d+/.test(cell)) cls = "over";
+      else if (cell === "E") cls = "even";
 
-    return cleanedPlayer.length > 0 && position !== "";
-  });
-
-  document.getElementById("leaderboard-body").innerHTML =
-    allRows.map(r=>{
-      return "<tr>" + colIndexes.map(i=>{
-        let cell = r[i] || "";
-        let cls = "";
-
-        if(headers[i].toLowerCase()==="position"){
-          cell = cell.replace(/^T/i,"");
-          if(cell===lastPosition) cell="";
-          else lastPosition=cell;
-        }
-
-        if(/^-\d+/.test(cell)) cls="under";
-        else if(/^\+\d+/.test(cell)) cls="over";
-        else if(cell==="E") cls="even";
-
-        return `<td class="${cls}">${cell}</td>`;
-      }).join("") + "</tr>";
-    }).join("");
+      return `<td class="${cls}">${cell}</td>`;
+    }).join("") + "</tr>";
+  }).join("");
 
   document.getElementById("updated").textContent =
     "Updated: " + new Date().toLocaleTimeString();
