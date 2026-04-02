@@ -31,7 +31,6 @@ body{
   box-shadow:0 40px 80px rgba(0,0,0,.35);
   overflow:hidden;
   position:relative;
-  
 }
 
 .board > *{
@@ -39,18 +38,14 @@ body{
   z-index:1;
 }
 
-
 /* ===== FULL-WIDTH TOP TITLE BAND ===== */
 .title-band{
-  background:#ffffff;                 /* white band */
-  margin:-28px -32px 14px -32px;       /* cancel board padding */
+  background:#ffffff;
+  margin:-28px -32px 14px -32px;
   padding:22px 32px 18px;
-  border-radius:18px 18px 0 0;         /* curved TOP only */
+  border-radius:18px 18px 0 0;
 }
 
-/* ===== CBS CURVED TOP CAP ===== */
-/* ===== CBS CURVED TOP CAP (CORRECT ORIENTATION) ===== */
-/* ===== CBS CURVED TOP CAP (FLUSH WIDTH) ===== */
 /* ===== CBS INWARD CURVED TOP ===== */
 .board::before{
   content:"";
@@ -67,13 +62,9 @@ body{
   z-index:0;
 }
 
-
-
-
-
-/* ===== TITLE (CBS BAR) ===== */
+/* ===== TITLE ===== */
 .title{
-  background:none;            /* IMPORTANT: no box */
+  background:none;
   color:#247146;
   padding:0;
   margin:0;
@@ -82,28 +73,20 @@ body{
   font-family:'EB Garamond', serif;
   font-style:italic;
   font-weight:700;
+  flex:1;
 }
 
-/* Title row layout */
 .title-row{
   display:flex;
   align-items:center;
   justify-content:space-between;
 }
 
-/* Logos on both sides */
 .title-logo{
-  height:140px;       /* adjust if needed */
+  height:140px;
   width:auto;
   opacity:0.95;
 }
-
-/* Center title stays centered */
-.title{
-  flex:1;
-  text-align:center;
-}
-
 
 /* ===== TABLE ===== */
 .leaderboard-table{
@@ -152,14 +135,12 @@ tbody td:nth-child(2){
   letter-spacing:.4px;
 }
 
-/* Position */
 tbody td:nth-child(1){
   font-weight:800;
   font-size:22px;
   color:#0f3d31;
 }
 
-/* TO PAR CBS STYLE */
 tbody td:nth-child(3){
   color:#FFDEEF;
   font-weight:900;
@@ -175,18 +156,15 @@ tbody td:nth-child(3).over{
   background:#097347;
 }
 
-/* Strokes back */
 tbody td:nth-child(4){
   font-size:22px;
   font-weight:700;
 }
 
-/* Alternating rows */
 tbody tr:nth-child(even){
   background:rgba(255,255,255,.55);
 }
 
-/* Leader highlight */
 tbody tr:nth-child(1){
   background:rgba(36,113,70,.14);
 }
@@ -212,22 +190,15 @@ tbody tr:nth-child(1){
 
 /* ===== CBS FOOTER BAR ===== */
 .footer-bar{
-  background:#247146;              /* same green as headers */
-  margin:18px -32px -32px -32px;   /* cancel board padding */
+  background:#247146;
+  margin:18px -32px -32px -32px;
   padding:10px 32px 12px;
   position:relative;
-}
-
-/* Footer layout */
-.footer-bar{
   display:flex;
   align-items:center;
   justify-content:space-between;
 }
 
-
-
-/* Thin yellow strip at very bottom */
 .footer-bar::after{
   content:"";
   position:absolute;
@@ -235,10 +206,9 @@ tbody tr:nth-child(1){
   left:0;
   width:100%;
   height:4px;
-  background:#f6c343;              /* CBS yellow accent */
+  background:#f6c343;
 }
 
-/* Updated timestamp inside footer */
 .updated{
   color:white;
   font-size:12px;
@@ -246,7 +216,6 @@ tbody tr:nth-child(1){
   text-align:right;
   opacity:0.9;
 }
-
 </style>
 </head>
 
@@ -254,17 +223,13 @@ tbody tr:nth-child(1){
 
 <div class="board">
 
-<div class="title-band">
-  <div class="title-row">
-    <img src="images/bastards_new.png" alt="Logo" class="title-logo">
-
-    <div class="title">BASTARDS</div>
-
-    <img src="images/bastards_new.png" alt="Logo" class="title-logo">
+  <div class="title-band">
+    <div class="title-row">
+      <img src="images/bastards_new.png" alt="Logo" class="title-logo">
+      <div class="title">BASTARDS</div>
+      <img src="images/bastards_new.png" alt="Logo" class="title-logo">
+    </div>
   </div>
-</div>
-
-
 
   <!-- HEADER -->
   <table class="leaderboard-table">
@@ -282,15 +247,10 @@ tbody tr:nth-child(1){
     </div>
   </div>
 
-<div class="footer-bar">
-  <div class="footer-left">
-    
+  <div class="footer-bar">
+    <div class="footer-left"></div>
+    <div id="updated" class="updated"></div>
   </div>
-
-  <div id="updated" class="updated"></div>
-</div>
-
-
 
 </div>
 
@@ -302,73 +262,130 @@ const ALLOWED_COLUMNS = ["position","players","to par","strokes back"];
 const PAUSE_TOP = 9000;
 const PAUSE_OTHER = 6000;
 const SCROLL_TIME = 600;
+const SCROLL_WINDOW_HEIGHT = 700;
 
 let allRows = [];
+let scrollTimeouts = [];
 
 /* ===== LOAD DATA ===== */
 async function loadLeaderboard(){
- // BODY
-const playerIndex = headers.findIndex(h => h.toLowerCase() === "players");
-const positionIndex = headers.findIndex(h => h.toLowerCase() === "position");
+  const res = await fetch(sheetURL + "&t=" + Date.now());
+  const csv = await res.text();
 
-allRows = body.filter(r => {
-  const playerCell = (r[playerIndex] || "").trim();
-  const position = (r[positionIndex] || "").trim();
+  const rows = csv.split("\n").map(r => r.split(",").map(c => c.trim()));
+  const headerIndex = rows.findIndex(r => r.some(c => c.toLowerCase() === "position"));
+  const headers = rows[headerIndex];
+  const body = rows.slice(headerIndex + 1);
 
-  const cleanedPlayer = playerCell.replace(/[•·●\s]/g, "");
+  const colIndexes = headers
+    .map((h, i) => ALLOWED_COLUMNS.includes(h.toLowerCase()) ? i : -1)
+    .filter(i => i !== -1);
 
-  return cleanedPlayer.length > 0 && position !== "";
-});
+  // HEADER
+  document.getElementById("leaderboard-header").innerHTML =
+    "<tr>" + colIndexes.map(i => `<th>${headers[i]}</th>`).join("") + "</tr>";
 
-document.getElementById("leaderboard-body").innerHTML =
-  allRows.map((r, rowIndex) => {
-    return "<tr>" + colIndexes.map(i => {
-      let cell = r[i] || "";
-      let cls = "";
+  // BODY FILTER
+  const playerIndex = headers.findIndex(h => h.toLowerCase() === "players");
+  const positionIndex = headers.findIndex(h => h.toLowerCase() === "position");
 
-      if (headers[i].toLowerCase() === "position") {
-        cell = rowIndex + 1;
-      }
+  allRows = body.filter(r => {
+    const playerCell = (r[playerIndex] || "").trim();
+    const position = (r[positionIndex] || "").trim();
 
-      if (/^-\d+/.test(cell)) cls = "under";
-      else if (/^\+\d+/.test(cell)) cls = "over";
-      else if (cell === "E") cls = "even";
+    // removes blank rows, bullet-only rows, and rows with just spaces
+    const cleanedPlayer = playerCell.replace(/[•·●\s]/g, "");
 
-      return `<td class="${cls}">${cell}</td>`;
-    }).join("") + "</tr>";
-  }).join("");
+    return cleanedPlayer.length > 0 && position !== "";
+  });
+
+  // BODY RENDER
+  document.getElementById("leaderboard-body").innerHTML =
+    allRows.map((r, rowIndex) => {
+      return "<tr>" + colIndexes.map(i => {
+        let cell = r[i] || "";
+        let cls = "";
+
+        // make PLACE fully dynamic based on rendered rows
+        if (headers[i].toLowerCase() === "position") {
+          cell = rowIndex + 1;
+        }
+
+        if (typeof cell === "string" && /^-\d+/.test(cell)) cls = "under";
+        else if (typeof cell === "string" && /^\+\d+/.test(cell)) cls = "over";
+        else if (cell === "E") cls = "even";
+
+        return `<td class="${cls}">${cell}</td>`;
+      }).join("") + "</tr>";
+    }).join("");
 
   document.getElementById("updated").textContent =
     "Updated: " + new Date().toLocaleTimeString();
 }
 
 /* ===== SCROLL ===== */
+function clearScrollTimers(){
+  scrollTimeouts.forEach(t => clearTimeout(t));
+  scrollTimeouts = [];
+}
+
 function startScroll(){
+  clearScrollTimers();
+
   const rows = document.querySelectorAll("#leaderboard-body tr");
-  if(!rows.length) return;
+  const inner = document.getElementById("scroll-inner");
+
+  if(!rows.length){
+    inner.style.transform = "translateY(0)";
+    return;
+  }
 
   const h = rows[0].offsetHeight;
-  const inner = document.getElementById("scroll-inner");
+  const rowsPerPage = Math.max(1, Math.floor(SCROLL_WINDOW_HEIGHT / h));
+  const totalRows = rows.length;
+  const totalPages = Math.ceil(totalRows / rowsPerPage);
 
   inner.style.transform = "translateY(0)";
 
-  setTimeout(()=>{
-    inner.style.transform = `translateY(-${h*10}px)`;
-    setTimeout(()=>{
-      inner.style.transform = `translateY(-${h*20}px)`;
-      setTimeout(()=>{
+  // no need to scroll if everything fits
+  if(totalPages <= 1){
+    return;
+  }
+
+  let currentPage = 0;
+
+  function showNextPage(){
+    const pause = currentPage === 0 ? PAUSE_TOP : PAUSE_OTHER;
+
+    const timeoutId = setTimeout(() => {
+      currentPage++;
+
+      if(currentPage >= totalPages){
         inner.style.transform = "translateY(0)";
-      }, PAUSE_OTHER);
-    }, PAUSE_OTHER);
-  }, PAUSE_TOP);
+        currentPage = 0;
+        showNextPage();
+        return;
+      }
+
+      inner.style.transform = `translateY(-${currentPage * rowsPerPage * h}px)`;
+      showNextPage();
+    }, pause);
+
+    scrollTimeouts.push(timeoutId);
+  }
+
+  showNextPage();
 }
 
 /* ===== INIT ===== */
 async function init(){
   await loadLeaderboard();
   startScroll();
-  setInterval(startScroll, PAUSE_TOP + PAUSE_OTHER*2 + SCROLL_TIME*3);
-  setInterval(loadLeaderboard, 30000);
+
+  setInterval(async () => {
+    await loadLeaderboard();
+    startScroll();
+  }, 30000);
 }
 
 init();
