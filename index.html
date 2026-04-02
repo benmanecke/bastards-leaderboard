@@ -326,7 +326,16 @@ async function loadLeaderboard(){
   // BODY
   let lastPosition = null;
   const playerIndex = headers.findIndex(h => h.toLowerCase() === "players");
-allRows = body.filter(r => (r[playerIndex] || "").trim() !== "");
+const positionIndex = headers.findIndex(h => h.toLowerCase() === "position");
+
+allRows = body.filter(r => {
+  const playerCell = (r[playerIndex] || "").trim();
+  const position = (r[positionIndex] || "").trim();
+
+  const bastardsName = playerCell.split(/[•·●]/)[0].trim();
+
+  return bastardsName !== "" && position !== "";
+});
 
   document.getElementById("leaderboard-body").innerHTML =
     allRows.map(r=>{
